@@ -1,0 +1,125 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+		<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular.min.js"></script>
+		<style>
+		   .highlighted { background: yellow }
+		   .suggestBox{
+		   max-height:250px;
+		   overflow: auto;
+		   z-index:1;
+		   width:100%;
+		   position: absolute;
+		   box-shadow: 0px 10px 5px 2px #888888;
+		   padding:0px;
+		   
+		   }
+		
+		   li:hover{
+			background-color: #C2E8E8
+			}
+			
+			.rowSelect{
+			background-color: #C2E8E8
+			}
+		</style>
+	</head>
+	<body ng-app="myApp" ng-controller="MainCtrl">
+		<script type="text/ng-template" id="suggest.html">
+					<div class="form-group">
+
+						<input type="text" name="search" ng-change="selected=''" ng-model="search" class="form-control" placeholder="Search in Products" ng-keydown="scroll($event)" />
+					  
+						<div ng-show="search && search.length > 2" class="list-group suggestBox" ng-mouseover="count=-1" >
+							
+										<li ng-repeat="product in searchedProduct = (products| filter: search)" class="list-group-item" ng-class="{'rowSelect': count==$index}" ng-bind-html="product.brandName + '<br>' + product.productName + ' | ' + product.category| highlight:search"
+										ng-click="selectProduct(product)">
+										</li>
+						
+						</div>
+					</div>
+					<div id="demo" style="color:blue; position:fixed" ng-show="selected">You Selected: {{selected}}</div>
+		</script>
+		
+		<div ng-controller="MainCtrl">
+				<auto-suggest></auto-suggest>
+		</div>
+		
+		<script>
+			var myApp = angular.module('myApp',[]);
+			
+			
+			myApp.controller('MainCtrl', function ($scope) {
+				$scope.selected;
+				$scope.count=-1;
+				$scope.products =   [{'brandName': 'Amul', 'productName':'Butter', 'category':'Dairy'},
+											{'brandName': 'Parle', 'productName':'Hide-n-Seek', 'category':'Biscuits'},
+											{'brandName': 'Lays', 'productName':'Classic-Salted', 'category':'Chips'},
+											{'brandName': 'Amul', 'productName':'Paneer', 'category':'Dairy'},
+											{'brandName': 'Cadbury', 'productName':'Dairy-Milk', 'category':'Chocolate'},
+											{'brandName': 'Pepsi', 'productName':'Pepsi', 'category':'Soft-Drink'},
+											{'brandName': 'Cadbury', 'productName':'Bourn-Vita', 'category':'Supplement'}];				
+
+				
+				$scope.selectProduct = function(product){
+						$scope.search = "";					
+						$scope.selected = product.brandName + ', ' + product.productName + ', ' + product.category;
+				}
+				
+				$scope.scroll = function(event){
+						console.log(event.keyCode);
+						console.log($scope.count);
+						console.log($scope.searchedProduct.length);
+					
+						if(event.keyCode == 40){
+								if($scope.count<$scope.searchedProduct.length-1){
+									$scope.count = $scope.count + 1;	
+								}
+						}
+					
+						if(event.keyCode == 38){
+								if($scope.count > 0){
+									$scope.count = $scope.count - 1;
+							
+								}
+						}
+					
+						if(event.keyCode == 13){
+								if($scope.count >= 0){
+									$scope.search = "";					
+									$scope.selected = $scope.searchedProduct[$scope.count].brandName + ', ' + $scope.searchedProduct[$scope.count].productName + ', ' + $scope.searchedProduct[$scope.count].category;				
+								}
+								else if($scope.count == -1){
+									$scope.selected = $scope.search;
+									$scope.search = "";
+								}
+							$scope.count = -1;
+						}
+				}//function ends here
+
+				
+				});
+			
+			
+			
+			myApp.directive('autoSuggest', function(){
+				return{
+					templateUrl: 'suggest.html'
+				};
+			});
+			
+			
+			myApp.filter('highlight', function($sce) {
+          return function(text, phrase) {
+            if (phrase) text = text.replace(new RegExp('('+phrase+')', 'gi'),'<span class="highlighted spanLeft">$1</span>')
+				return $sce.trustAsHtml(text)
+          }
+        });
+		</script>
+	</body>
+</html>
